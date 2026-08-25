@@ -10,6 +10,8 @@ type Task = {
 
 type TasksByDate = Record<string, Task[]>;
 
+export const dynamic = 'force-static';
+
 const STORAGE_KEY = 't-day-state-v1';
 const DEFAULT_TITLE = '项目上线';
 const DEFAULT_TARGET = '2026-09-01T09:00';

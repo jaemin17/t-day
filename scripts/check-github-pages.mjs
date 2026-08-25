@@ -7,10 +7,12 @@ function assertIncludes(file, expected) {
   }
 }
 
-assertIncludes('github-pages/index.html', 'T-Day');
-assertIncludes('github-pages/index.html', 'localStorage');
-assertIncludes('github-pages/index.html', '选择目标日期');
-assertIncludes('github-pages/index.html', '添加待办');
+assertIncludes('dist/client/index.html', 'T-Day 目标日');
+assertIncludes('dist/client/index.html', '项目上线');
+assertIncludes('dist/client/index.html', 'date-stamp-group');
+assertIncludes('dist/client/index.html', '/t-day/_next/');
 assertIncludes('.github/workflows/pages.yml', 'actions/deploy-pages');
+assertIncludes('.github/workflows/pages.yml', 'DEPLOY_TARGET: github-pages');
+assertIncludes('.github/workflows/pages.yml', 'path: dist/client');
 
-console.log('GitHub Pages static bundle check passed');
+console.log('GitHub Pages build artifact check passed');
