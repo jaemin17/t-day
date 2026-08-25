@@ -16,6 +16,11 @@ const DEFAULT_TARGET = '2026-09-01T09:00';
 const INITIAL_NOW = new Date(2026, 7, 25, 12, 0, 0);
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
+const DATE_STAMP_HELP = [
+  ['1. 只保存在当前浏览器。', '不会上传或同步到其它设备。'],
+  ['2. 适合临时目标和每日安排。', '重要记录建议另行备份。'],
+  ['3. 清除浏览器数据或换设备后，', '已保存的内容可能会消失。'],
+];
 
 function pad(value: number) {
   return String(value).padStart(2, '0');
@@ -37,8 +42,18 @@ function parseDateKey(key: string) {
 function formatFullDate(date: Date) {
   return new Intl.DateTimeFormat('zh-CN', {
     dateStyle: 'full',
-    timeStyle: 'short',
   }).format(date);
+}
+
+function formatDateStamp(date: Date) {
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    day: 'numeric',
+    month: 'long',
+    weekday: 'long',
+    year: 'numeric',
+  }).formatToParts(date);
+  const byType = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${byType.weekday} ${byType.day} ${byType.month} ${byType.year}`;
 }
 
 function formatDayLabel(key: string) {
@@ -146,6 +161,7 @@ export default function Home() {
   const [tasks, setTasks] = useState<TasksByDate>({});
   const [editingTitle, setEditingTitle] = useState(false);
   const [titleDraft, setTitleDraft] = useState(DEFAULT_TITLE);
+  const [dateHelpOpen, setDateHelpOpen] = useState(false);
   const [dateDialogOpen, setDateDialogOpen] = useState(false);
   const [taskDate, setTaskDate] = useState<string | null>(null);
   const [taskDraft, setTaskDraft] = useState('');
@@ -190,14 +206,11 @@ export default function Home() {
   }, [title, targetValue, tasks]);
 
   const target = useMemo(() => new Date(targetValue), [targetValue]);
-  const remainingMs = Math.max(0, target.getTime() - now.getTime());
-  const remainingDays = Math.floor(remainingMs / MS_PER_DAY);
   const months = useMemo(() => buildMonths(now, target), [now, target]);
   const totalDays = daysBetween(now, target);
-  const allTasks = Object.values(tasks).flat();
-  const doneCount = allTasks.filter((task) => task.done).length;
-  const progress = allTasks.length ? Math.round((doneCount / allTasks.length) * 100) : 0;
+  const remainingDays = totalDays;
   const todayTasks = tasks[dateKey(now)] ?? [];
+  const todayKey = dateKey(now);
 
   function saveTitle() {
     const next = titleDraft.trim() || DEFAULT_TITLE;
@@ -245,13 +258,45 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f7f7] text-[#1a1a1a]">
+    <main className="relative min-h-screen bg-background text-[#1a1a1a]">
+      <div className="date-stamp-group">
+        <div className="date-stamp-row">
+          <time className="date-stamp" dateTime={todayKey}>
+            <em>{formatDateStamp(now)}</em>
+          </time>
+          <button
+            aria-controls="date-storage-help"
+            aria-expanded={dateHelpOpen}
+            aria-label="存储说明"
+            className="date-storage-help-button"
+            type="button"
+            onClick={() => setDateHelpOpen((open) => !open)}
+          >
+            <svg
+              aria-hidden="true"
+              className="date-storage-help-icon"
+              focusable="false"
+              viewBox="0 0 1024 1024"
+            >
+              <path d="M755.9 77.1H268.1c-112 0-203.2 91.2-203.2 203.2v325.1c0 112 91.2 203.2 203.2 203.2h124.1L512 946.9l119.8-138.3h124.1c112 0 203.2-91.2 203.2-203.2V280.3c0-112.1-91.2-203.2-203.2-203.2z m121.9 528.3c0 67.2-54.7 121.9-121.9 121.9H594.6L512 822.8l-82.6-95.4H268.1c-67.2 0-121.9-54.7-121.9-121.9V280.3c0-67.2 54.7-121.9 121.9-121.9h487.7c67.2 0 121.9 54.7 121.9 121.9v325.1z" />
+              <path d="M527.5 253.5c-84.4-3.9-134.4 33.8-150 113l56.5 13.6c11.7-51.9 40.2-77.9 85.7-77.9 37.7 2.6 58.4 22.1 62.3 58.4 1.3 26-16.2 52-52.6 77.9-35.1 23.4-52 53.9-50.7 91.6v19.5h52.6V534c-1.3-27.3 13-50.7 42.9-70.1 50.7-31.2 74.7-67.5 72.1-109.1-7.8-63.6-47.4-97.4-118.8-101.3zM472.9 596.4h64.3v62.3h-64.3z" />
+            </svg>
+          </button>
+        </div>
+        {dateHelpOpen && (
+          <div className="date-storage-help-panel" id="date-storage-help">
+            {DATE_STAMP_HELP.map(([titleLine, bodyLine]) => (
+              <p key={titleLine}>
+                <strong>{titleLine}</strong>
+                <span>{bodyLine}</span>
+              </p>
+            ))}
+          </div>
+        )}
+      </div>
       <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
         <header className="grid items-end gap-8 pb-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
           <div className="flex min-w-0 flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-400">
-              T-Day
-            </p>
             {editingTitle ? (
               <input
                 autoFocus
@@ -275,10 +320,9 @@ export default function Home() {
                 onClick={() => setEditingTitle(true)}
               >
                 <span>{title}</span>
-                <span className="title-pencil">✎</span>
               </button>
             )}
-            <p className="text-sm text-neutral-500 sm:text-base">
+            <p className="target-date-line text-sm text-neutral-500 sm:text-base">
               距离 {formatFullDate(target)}
             </p>
           </div>
@@ -291,26 +335,10 @@ export default function Home() {
           >
             <span className="countdown-number">{remainingDays}</span>
             <span className="countdown-unit">天</span>
-            <span className="countdown-hint">点击设置时间</span>
           </button>
         </header>
 
         <section className="calendar-card">
-          <div className="calendar-heading">
-            <h2>▣ 倒计时期间的安排</h2>
-            <p>
-              共 <strong>{totalDays}</strong> 天（含今天与目标日）· 点击日期添加待办
-            </p>
-          </div>
-
-          <div className="progress-row">
-            <span>任务进度</span>
-            <div className="progress-track">
-              <span style={{ width: `${progress}%` }} />
-            </div>
-            <strong>{progress}%</strong>
-          </div>
-
           {todayTasks.length > 0 && (
             <div className="today-strip">
               <span>今日重点</span>

@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 :root {
-  --background: #f7f7f7;
+  --background: #f6f8fb;
   --foreground: #1a1a1a;
 }
 
@@ -10,6 +10,7 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-figtree);
 }
 
 * {
@@ -32,6 +33,91 @@ button {
   cursor: pointer;
 }
 
+.date-stamp-group {
+  left: 32px;
+  position: absolute;
+  top: 22px;
+  z-index: 4;
+}
+
+.date-stamp-row {
+  align-items: center;
+  display: inline-flex;
+  gap: 11px;
+}
+
+.date-stamp {
+  color: #1112179e;
+  font-family: var(--font-figtree), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 16px;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  line-height: 1;
+}
+
+.date-stamp em {
+  font-style: italic;
+  font-weight: inherit;
+}
+
+.date-storage-help-button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: #1112176b;
+  display: inline-flex;
+  height: 23px;
+  justify-content: center;
+  padding: 0;
+  transition: background 160ms ease, color 160ms ease;
+  width: 23px;
+}
+
+.date-storage-help-button:hover,
+.date-storage-help-button[aria-expanded='true'] {
+  background: rgba(255, 255, 255, 0.46);
+  color: #11121794;
+}
+
+.date-storage-help-icon {
+  display: block;
+  fill: currentColor;
+  height: 20px;
+  width: 20px;
+}
+
+.date-storage-help-panel {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #11121714;
+  border-radius: 8px;
+  box-shadow: 0 10px 24px #1112171a;
+  color: #111217a3;
+  display: grid;
+  font-family: var(--font-figtree), var(--font-geist-sans), system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 8px;
+  line-height: 1.35;
+  margin-top: 9px;
+  max-width: calc(100vw - 48px);
+  padding: 9px 11px;
+  text-align: left;
+  width: max-content;
+}
+
+.date-storage-help-panel p {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+}
+
+.date-storage-help-panel strong {
+  color: #111217b8;
+  font-weight: 650;
+}
+
 .title-button,
 .title-input {
   width: fit-content;
@@ -44,14 +130,13 @@ button {
   font-weight: 780;
   letter-spacing: 0;
   line-height: 1.05;
-  padding: 0.25rem 0.75rem;
+  padding: 0.25rem 0;
   text-align: left;
 }
 
 .title-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.7rem;
 }
 
 .title-button:hover,
@@ -60,22 +145,19 @@ button {
   outline: none;
 }
 
-.title-pencil {
-  color: #9a9a9a;
-  font-size: 0.46em;
-  font-weight: 400;
+.target-date-line {
+  padding-left: 0.12rem;
 }
 
 .countdown-button {
   display: flex;
   min-width: 8rem;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: baseline;
+  gap: 0.8rem;
   border: 1px solid transparent;
   border-radius: 24px;
   background: transparent;
   padding: 0.45rem 0.75rem;
-  text-align: left;
 }
 
 .countdown-button:hover {
@@ -90,11 +172,9 @@ button {
 }
 
 .countdown-unit {
-  align-self: flex-end;
   color: #6c6c6c;
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   font-weight: 600;
-  margin-right: 0.5rem;
 }
 
 .countdown-hint {
@@ -105,16 +185,14 @@ button {
 
 .calendar-card {
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border-radius: 18px;
   background: rgba(255, 255, 255, 0.78);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
   margin-bottom: 2.5rem;
   padding: 1.5rem;
 }
 
-.calendar-heading,
 .month-title,
-.progress-row,
 .today-strip {
   align-items: center;
   display: flex;
@@ -123,7 +201,6 @@ button {
   justify-content: space-between;
 }
 
-.calendar-heading h2,
 .month-title h3,
 .modal h2 {
   font-size: 1.05rem;
@@ -131,35 +208,11 @@ button {
   margin: 0;
 }
 
-.calendar-heading p,
 .month-title span,
 .modal p {
   color: #747474;
   font-size: 0.86rem;
   margin: 0;
-}
-
-.progress-row {
-  background: #f4f4f4;
-  border-radius: 8px;
-  color: #777;
-  font-size: 0.82rem;
-  margin: 1.25rem 0 1.5rem;
-  padding: 0.75rem;
-}
-
-.progress-track {
-  background: #e4e4e4;
-  border-radius: 999px;
-  flex: 1 1 10rem;
-  height: 0.45rem;
-  overflow: hidden;
-}
-
-.progress-track span {
-  background: #222;
-  display: block;
-  height: 100%;
 }
 
 .today-strip {
@@ -222,7 +275,7 @@ button {
 
 .day-cell {
   border: 1px dashed #e3e3e3;
-  border-radius: 16px;
+  border-radius: 18px;
   min-height: 4.5rem;
   padding: 0.5rem;
 }
