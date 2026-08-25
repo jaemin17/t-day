@@ -39,12 +39,6 @@ function parseDateKey(key: string) {
   return new Date(year, month - 1, day);
 }
 
-function formatFullDate(date: Date) {
-  return new Intl.DateTimeFormat('zh-CN', {
-    dateStyle: 'full',
-  }).format(date);
-}
-
 function formatDateStamp(date: Date) {
   const parts = new Intl.DateTimeFormat('en-GB', {
     day: 'numeric',
@@ -295,7 +289,7 @@ export default function Home() {
         )}
       </div>
       <section className="mx-auto flex min-h-screen w-full max-w-5xl flex-col px-5 py-10 sm:px-8 lg:px-12 lg:py-14">
-        <header className="grid items-end gap-8 pb-12 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+        <header className="grid items-end gap-6 pb-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-8">
           <div className="flex min-w-0 flex-col gap-3">
             {editingTitle ? (
               <input
@@ -322,9 +316,6 @@ export default function Home() {
                 <span>{title}</span>
               </button>
             )}
-            <p className="target-date-line text-sm text-neutral-500 sm:text-base">
-              距离 {formatFullDate(target)}
-            </p>
           </div>
 
           <button

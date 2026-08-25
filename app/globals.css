@@ -130,7 +130,7 @@ button {
   font-weight: 780;
   letter-spacing: 0;
   line-height: 1.05;
-  padding: 0.25rem 0;
+  padding: 0;
   text-align: left;
 }
 
@@ -145,19 +145,16 @@ button {
   outline: none;
 }
 
-.target-date-line {
-  padding-left: 0.12rem;
-}
-
 .countdown-button {
   display: flex;
-  min-width: 8rem;
-  align-items: baseline;
-  gap: 0.8rem;
+  min-width: 0;
+  align-items: flex-end;
+  gap: 0.45rem;
   border: 1px solid transparent;
   border-radius: 24px;
   background: transparent;
-  padding: 0.45rem 0.75rem;
+  padding: 0.35rem 0;
+  transform: translateY(0.35rem);
 }
 
 .countdown-button:hover {
@@ -166,7 +163,7 @@ button {
 
 .countdown-number {
   display: block;
-  font-size: clamp(5rem, 15vw, 10rem);
+  font-size: clamp(4.75rem, 13vw, 9rem);
   font-weight: 520;
   line-height: 0.95;
 }
@@ -175,6 +172,7 @@ button {
   color: #6c6c6c;
   font-size: 1.05rem;
   font-weight: 600;
+  transform: translateY(-0.25rem);
 }
 
 .countdown-hint {
