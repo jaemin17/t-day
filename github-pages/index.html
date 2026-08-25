@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>T-Day 目标日</title>
+    <meta name="description" content="围绕目标日期推进每日任务的简洁倒计时工具。" />
+    <style>
+      :root {
+        color-scheme: light;
+        --bg: #f7f7f7;
+        --fg: #1a1a1a;
+        --muted: #747474;
+        --line: #e0e0e0;
+        --soft: #f4f4f4;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+
+      button {
+        cursor: pointer;
+      }
+
+      .page {
+        margin: 0 auto;
+        max-width: 64rem;
+        min-height: 100vh;
+        padding: 3.5rem 3rem;
+      }
+
+      .hero {
+        display: grid;
+        gap: 3rem;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+        padding-bottom: 3rem;
+      }
+
+      .brand {
+        color: #9a9a9a;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.2em;
+        margin: 0 0 0.55rem;
+      }
+
+      .title-button,
+      .title-input {
+        width: fit-content;
+        max-width: 100%;
+        border: 1px solid transparent;
+        border-radius: 18px;
+        background: transparent;
+        color: #151515;
+        font-size: clamp(2.4rem, 6vw, 4.15rem);
+        font-weight: 780;
+        letter-spacing: 0;
+        line-height: 1.05;
+        padding: 0.25rem 0.75rem;
+        text-align: left;
+      }
+
+      .title-button {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7rem;
+      }
+
+      .title-button:hover,
+      .title-input:focus {
+        border-color: #d1d1d1;
+        outline: none;
+      }
+
+      .title-pencil {
+        color: #9a9a9a;
+        font-size: 0.46em;
+        font-weight: 400;
+      }
+
+      .subtitle {
+        color: #666;
+        font-size: 1rem;
+        margin: 0.8rem 0 0;
+      }
+
+      .countdown-button {
+        display: flex;
+        min-width: 8rem;
+        flex-direction: column;
+        align-items: flex-start;
+        border: 1px solid transparent;
+        border-radius: 24px;
+        background: transparent;
+        padding: 0.45rem 0.75rem;
+        text-align: left;
+      }
+
+      .countdown-button:hover {
+        border-color: #d1d1d1;
+      }
+
+      .countdown-number {
+        display: block;
+        font-size: clamp(5rem, 15vw, 10rem);
+        font-weight: 520;
+        line-height: 0.95;
+      }
+
+      .countdown-unit {
+        align-self: flex-end;
+        color: #6c6c6c;
+        font-size: 0.9rem;
+        font-weight: 600;
+        margin-right: 0.5rem;
+      }
+
+      .countdown-hint {
+        color: #999;
+        font-size: 0.78rem;
+        margin-top: 0.45rem;
+      }
+
+      .calendar-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.78);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07);
+        padding: 1.5rem;
+      }
+
+      .calendar-heading,
+      .month-title,
+      .progress-row,
+      .today-strip {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      h2,
+      h3 {
+        margin: 0;
+      }
+
+      .calendar-heading h2,
+      .month-title h3,
+      .modal h2 {
+        font-size: 1.05rem;
+        font-weight: 700;
+      }
+
+      .calendar-heading p,
+      .month-title span,
+      .modal p {
+        color: var(--muted);
+        font-size: 0.86rem;
+        margin: 0;
+      }
+
+      .progress-row {
+        background: var(--soft);
+        border-radius: 8px;
+        color: #777;
+        font-size: 0.82rem;
+        margin: 1.25rem 0 1.5rem;
+        padding: 0.75rem;
+      }
+
+      .progress-track {
+        background: #e4e4e4;
+        border-radius: 999px;
+        flex: 1 1 10rem;
+        height: 0.45rem;
+        overflow: hidden;
+      }
+
+      .progress-track span {
+        display: block;
+        height: 100%;
+        background: #222;
+      }
+
+      .today-strip {
+        justify-content: flex-start;
+        margin-bottom: 1.5rem;
+      }
+
+      .today-strip > span {
+        color: #777;
+        font-size: 0.82rem;
+      }
+
+      .mini-task {
+        border: 1px solid #dcdcdc;
+        border-radius: 999px;
+        background: #fff;
+        color: #333;
+        font-size: 0.78rem;
+        padding: 0.25rem 0.65rem;
+      }
+
+      .mini-task.is-done,
+      .task-preview small.is-done,
+      .task-row.is-done span {
+        color: #999;
+        text-decoration: line-through;
+      }
+
+      .months {
+        display: grid;
+        gap: 1.6rem;
+      }
+
+      .month {
+        display: grid;
+        gap: 0.65rem;
+      }
+
+      .weekdays,
+      .day-grid,
+      .picker-weekdays,
+      .picker-grid {
+        display: grid;
+        grid-template-columns: repeat(7, minmax(0, 1fr));
+      }
+
+      .weekdays,
+      .picker-weekdays {
+        color: #888;
+        font-size: 0.76rem;
+        text-align: center;
+      }
+
+      .weekdays span,
+      .picker-weekdays span {
+        padding: 0.35rem 0;
+      }
+
+      .day-grid {
+        gap: 0.5rem;
+      }
+
+      .day-cell {
+        min-height: 4.5rem;
+        border: 1px dashed #e3e3e3;
+        border-radius: 16px;
+        padding: 0.5rem;
+      }
+
+      .day-cell.is-outside,
+      .day-cell.is-empty {
+        background: rgba(245, 245, 245, 0.5);
+        color: #b7b7b7;
+      }
+
+      .day-cell.is-active {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        border-style: solid;
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.9);
+        text-align: left;
+      }
+
+      .day-cell.is-active:hover {
+        border-color: #222;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      }
+
+      .day-top {
+        display: flex;
+        gap: 0.35rem;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .day-top strong {
+        font-size: 0.9rem;
+      }
+
+      .day-top em {
+        border-radius: 999px;
+        background: #222;
+        color: #fff;
+        font-size: 0.58rem;
+        font-style: normal;
+        padding: 0.08rem 0.34rem;
+      }
+
+      .day-top em.is-target {
+        background: #555;
+      }
+
+      .add-hint {
+        margin-top: auto;
+        color: #9a9a9a;
+        font-size: 0.68rem;
+        opacity: 0;
+      }
+
+      .day-cell:hover .add-hint {
+        opacity: 1;
+      }
+
+      .task-preview {
+        display: grid;
+        gap: 0.18rem;
+        margin-top: auto;
+        min-width: 0;
+      }
+
+      .task-preview small {
+        overflow: hidden;
+        color: #555;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .modal-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 10;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.18);
+        padding: 1.25rem;
+      }
+
+      .modal-backdrop.is-open {
+        display: flex;
+      }
+
+      .modal {
+        position: relative;
+        width: min(100%, 32rem);
+        max-height: min(90vh, 720px);
+        overflow: auto;
+        border: 1px solid #e2e2e2;
+        border-radius: 8px;
+        background: #fff;
+        box-shadow: 0 24px 80px rgba(0, 0, 0, 0.18);
+        padding: 1.5rem;
+      }
+
+      .modal > p {
+        margin-top: 0.45rem;
+      }
+
+      .close-button {
+        position: absolute;
+        right: 1rem;
+        top: 1rem;
+        border: 0;
+        background: transparent;
+        color: #999;
+        font-size: 0.68rem;
+      }
+
+      .picker-top,
+      .modal-actions,
+      .task-form {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+      }
+
+      .picker-top {
+        justify-content: space-between;
+        margin-top: 1.25rem;
+      }
+
+      .picker-top button,
+      .modal-actions button,
+      .task-form button {
+        min-height: 2.35rem;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fff;
+        padding: 0 0.85rem;
+      }
+
+      .picker-grid {
+        gap: 0.25rem;
+        margin-top: 0.35rem;
+      }
+
+      .picker-grid button {
+        min-height: 2.25rem;
+        border: 0;
+        border-radius: 8px;
+        background: transparent;
+      }
+
+      .picker-grid button:hover:not(:disabled),
+      .picker-grid button.is-selected {
+        background: #222;
+        color: #fff;
+      }
+
+      .picker-grid button:disabled {
+        color: #c9c9c9;
+        cursor: not-allowed;
+      }
+
+      .target-note {
+        margin: 1rem 0 !important;
+        text-align: center;
+      }
+
+      .modal-actions {
+        justify-content: flex-end;
+      }
+
+      .modal-actions button:last-child,
+      .task-form button {
+        background: #222;
+        color: #fff;
+      }
+
+      .task-list {
+        display: grid;
+        gap: 0.5rem;
+        margin-top: 1rem;
+      }
+
+      .task-row {
+        display: flex;
+        gap: 0.55rem;
+        align-items: center;
+        border: 1px solid #ededed;
+        border-radius: 8px;
+        padding: 0.65rem 0.75rem;
+      }
+
+      .task-form {
+        margin-top: 1rem;
+      }
+
+      .task-form input {
+        min-width: 0;
+        min-height: 2.75rem;
+        flex: 1;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 0 0.8rem;
+      }
+
+      @media (max-width: 720px) {
+        .page {
+          padding: 2.5rem 1.25rem;
+        }
+
+        .hero {
+          grid-template-columns: 1fr;
+          gap: 1.75rem;
+        }
+
+        .calendar-card {
+          padding: 1rem;
+        }
+
+        .day-grid {
+          gap: 0.35rem;
+        }
+
+        .day-cell {
+          min-height: 4rem;
+          border-radius: 12px;
+          padding: 0.4rem;
+        }
+
+        .add-hint {
+          opacity: 1;
+        }
+
+        .task-form {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .task-form button {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <header class="hero">
+        <div>
+          <p class="brand">T-DAY</p>
+          <button id="titleButton" class="title-button" type="button" aria-label="修改事项名称">
+            <span id="titleText">项目上线</span>
+            <span class="title-pencil">✎</span>
+          </button>
+          <input id="titleInput" class="title-input" hidden />
+          <p id="targetText" class="subtitle"></p>
+        </div>
+        <button id="countdownButton" class="countdown-button" type="button" aria-label="点击设置目标时间">
+          <span id="remainingDays" class="countdown-number">0</span>
+          <span class="countdown-unit">天</span>
+          <span class="countdown-hint">点击设置时间</span>
+        </button>
+      </header>
+
+      <section class="calendar-card">
+        <div class="calendar-heading">
+          <h2>▣ 倒计时期间的安排</h2>
+          <p>共 <strong id="totalDays">0</strong> 天（含今天与目标日）· 点击日期添加待办</p>
+        </div>
+        <div class="progress-row">
+          <span>任务进度</span>
+          <div class="progress-track"><span id="progressBar"></span></div>
+          <strong id="progressText">0%</strong>
+        </div>
+        <div id="todayStrip" class="today-strip" hidden></div>
+        <div id="months" class="months"></div>
+      </section>
+    </main>
+
+    <div id="dateBackdrop" class="modal-backdrop">
+      <section class="modal" role="dialog" aria-modal="true">
+        <button id="closeDate" class="close-button" type="button">Close</button>
+        <h2>选择目标日期</h2>
+        <p>点选一个日期后按「确认」，倒计时会以当日 09:00 为终点重新计算。</p>
+        <div class="picker-top">
+          <button id="prevMonth" type="button">‹</button>
+          <strong id="pickerMonth"></strong>
+          <button id="nextMonth" type="button">›</button>
+        </div>
+        <div class="picker-weekdays"></div>
+        <div id="pickerGrid" class="picker-grid"></div>
+        <p id="targetNote" class="target-note"></p>
+        <div class="modal-actions">
+          <button id="cancelDate" type="button">取消</button>
+          <button id="applyDate" type="button">确认</button>
+        </div>
+      </section>
+    </div>
+
+    <div id="taskBackdrop" class="modal-backdrop">
+      <section class="modal" role="dialog" aria-modal="true">
+        <button id="closeTask" class="close-button" type="button">Close</button>
+        <h2 id="taskTitle"></h2>
+        <p id="taskEmpty">这一天还没有安排，添加你要完成的事情。</p>
+        <div id="taskList" class="task-list"></div>
+        <form id="taskForm" class="task-form">
+          <input id="taskInput" placeholder="例如：写需求文档、复习第三章" />
+          <button type="submit">添加待办</button>
+        </form>
+      </section>
+    </div>
+
+    <script>
+      const storageKey = "t-day-state-v1";
+      const weekdays = ["一", "二", "三", "四", "五", "六", "日"];
+      const msPerDay = 24 * 60 * 60 * 1000;
+      const state = loadState();
+      let now = new Date();
+      let pickerMonth = new Date(state.targetValue);
+      let selectedTargetKey = dateKey(new Date(state.targetValue));
+      let activeTaskDate = null;
+
+      function loadState() {
+        try {
+          const saved = JSON.parse(localStorage.getItem(storageKey) || "{}");
+          return {
+            title: saved.title || "项目上线",
+            targetValue: saved.targetValue || "2026-09-01T09:00",
+            tasks: saved.tasks || {},
+          };
+        } catch {
+          localStorage.removeItem(storageKey);
+          return { title: "项目上线", targetValue: "2026-09-01T09:00", tasks: {} };
+        }
+      }
+
+      function saveState() {
+        localStorage.setItem(storageKey, JSON.stringify(state));
+      }
+
+      function pad(value) {
+        return String(value).padStart(2, "0");
+      }
+
+      function dateKey(date) {
+        return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+      }
+
+      function parseDateKey(key) {
+        const [year, month, day] = key.split("-").map(Number);
+        return new Date(year, month - 1, day);
+      }
+
+      function startOfDay(date) {
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      }
+
+      function mondayIndex(date) {
+        return (date.getDay() + 6) % 7;
+      }
+
+      function monthLabel(year, month) {
+        return `${year}年${month + 1}月`;
+      }
+
+      function formatFullDate(date) {
+        return new Intl.DateTimeFormat("zh-CN", {
+          dateStyle: "full",
+          timeStyle: "short",
+        }).format(date);
+      }
+
+      function formatDayLabel(key) {
+        return new Intl.DateTimeFormat("zh-CN", {
+          month: "long",
+          day: "numeric",
+          weekday: "long",
+        }).format(parseDateKey(key));
+      }
+
+      function daysBetween(start, end) {
+        const diff = startOfDay(end).getTime() - startOfDay(start).getTime();
+        return Math.max(0, Math.round(diff / msPerDay) + 1);
+      }
+
+      function buildMonths() {
+        const start = startOfDay(now);
+        const target = new Date(state.targetValue);
+        const end = startOfDay(target);
+        if (end.getTime() < start.getTime()) return [];
+
+        const todayKey = dateKey(start);
+        const targetKey = dateKey(end);
+        const months = [];
+        const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+        const last = new Date(end.getFullYear(), end.getMonth(), 1);
+
+        while (cursor.getTime() <= last.getTime()) {
+          const year = cursor.getFullYear();
+          const month = cursor.getMonth();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+          const cells = [];
+          let inRangeCount = 0;
+
+          for (let i = 0; i < mondayIndex(new Date(year, month, 1)); i += 1) {
+            cells.push({ key: null, day: 0, inRange: false });
+          }
+
+          for (let day = 1; day <= daysInMonth; day += 1) {
+            const current = new Date(year, month, day);
+            const key = dateKey(current);
+            const time = startOfDay(current).getTime();
+            const inRange = time >= start.getTime() && time <= end.getTime();
+            if (inRange) inRangeCount += 1;
+            cells.push({ key, day, inRange, isToday: key === todayKey, isTarget: key === targetKey });
+          }
+
+          while (cells.length % 7 !== 0) cells.push({ key: null, day: 0, inRange: false });
+          const activeRows = [];
+          for (let i = 0; i < cells.length; i += 7) {
+            const row = cells.slice(i, i + 7);
+            if (row.some((cell) => cell.inRange)) activeRows.push(...row);
+          }
+
+          if (inRangeCount > 0) {
+            months.push({ id: `${year}-${month}`, label: monthLabel(year, month), cells: activeRows, inRangeCount });
+          }
+
+          cursor.setMonth(cursor.getMonth() + 1);
+        }
+        return months;
+      }
+
+      function buildPickerCells() {
+        const year = pickerMonth.getFullYear();
+        const month = pickerMonth.getMonth();
+        const cells = [];
+        for (let i = 0; i < mondayIndex(new Date(year, month, 1)); i += 1) cells.push(null);
+        for (let day = 1; day <= new Date(year, month + 1, 0).getDate(); day += 1) {
+          cells.push(new Date(year, month, day));
+        }
+        while (cells.length % 7 !== 0) cells.push(null);
+        return cells;
+      }
+
+      function render() {
+        now = new Date();
+        const target = new Date(state.targetValue);
+        const remainingMs = Math.max(0, target.getTime() - now.getTime());
+        const allTasks = Object.values(state.tasks).flat();
+        const doneCount = allTasks.filter((task) => task.done).length;
+        const progress = allTasks.length ? Math.round((doneCount / allTasks.length) * 100) : 0;
+
+        document.getElementById("titleText").textContent = state.title;
+        document.getElementById("titleButton").setAttribute("aria-label", `修改事项名称，当前为 ${state.title}`);
+        document.getElementById("targetText").textContent = `距离 ${formatFullDate(target)}`;
+        document.getElementById("remainingDays").textContent = Math.floor(remainingMs / msPerDay);
+        document.getElementById("totalDays").textContent = daysBetween(now, target);
+        document.getElementById("progressText").textContent = `${progress}%`;
+        document.getElementById("progressBar").style.width = `${progress}%`;
+
+        renderToday();
+        renderMonths();
+        renderPicker();
+        renderTaskDialog();
+      }
+
+      function renderToday() {
+        const key = dateKey(now);
+        const tasks = state.tasks[key] || [];
+        const strip = document.getElementById("todayStrip");
+        strip.hidden = tasks.length === 0;
+        strip.innerHTML = "";
+        if (!tasks.length) return;
+        strip.append(node("span", "今日重点"));
+        tasks.slice(0, 3).forEach((task) => {
+          const button = node("button", task.text, `mini-task${task.done ? " is-done" : ""}`);
+          button.type = "button";
+          button.addEventListener("click", () => toggleTask(key, task.id));
+          strip.append(button);
+        });
+      }
+
+      function renderMonths() {
+        const root = document.getElementById("months");
+        root.innerHTML = "";
+        buildMonths().forEach((month) => {
+          const section = node("section", "", "month");
+          const title = node("div", "", "month-title");
+          title.innerHTML = `<h3>${month.label}</h3><span>${month.inRangeCount} 天在倒计时内</span>`;
+          const weekdaysRow = node("div", "", "weekdays");
+          weekdays.forEach((weekday) => weekdaysRow.append(node("span", weekday)));
+          const grid = node("div", "", "day-grid");
+          month.cells.forEach((cell, index) => grid.append(renderDayCell(cell, `${month.id}-${index}`)));
+          section.append(title, weekdaysRow, grid);
+          root.append(section);
+        });
+      }
+
+      function renderDayCell(cell, fallbackKey) {
+        if (!cell.key) return node("div", "", "day-cell is-empty");
+        const dayTasks = state.tasks[cell.key] || [];
+        if (!cell.inRange) {
+          const div = node("div", "", "day-cell is-outside");
+          div.append(node("span", cell.day));
+          return div;
+        }
+        const button = node("button", "", "day-cell is-active");
+        button.type = "button";
+        button.addEventListener("click", () => openTaskDialog(cell.key));
+        const top = node("span", "", "day-top");
+        top.append(node("strong", cell.day));
+        if (cell.isToday) top.append(node("em", "今天"));
+        if (cell.isTarget) top.append(node("em", "目标", "is-target"));
+        button.append(top);
+        if (dayTasks.length) {
+          const preview = node("span", "", "task-preview");
+          dayTasks.slice(0, 2).forEach((task) => preview.append(node("small", task.text, task.done ? "is-done" : "")));
+          button.append(preview);
+        } else {
+          button.append(node("span", "添加安排", "add-hint"));
+        }
+        return button;
+      }
+
+      function renderPicker() {
+        document.getElementById("pickerMonth").textContent = monthLabel(pickerMonth.getFullYear(), pickerMonth.getMonth());
+        document.querySelector(".picker-weekdays").innerHTML = weekdays.map((weekday) => `<span>${weekday}</span>`).join("");
+        document.getElementById("targetNote").textContent = `目标日：${formatDayLabel(selectedTargetKey)}（当日 09:00 到点）`;
+        const grid = document.getElementById("pickerGrid");
+        grid.innerHTML = "";
+        buildPickerCells().forEach((cell) => {
+          if (!cell) {
+            grid.append(node("span", ""));
+            return;
+          }
+          const key = dateKey(cell);
+          const button = node("button", cell.getDate(), key === selectedTargetKey ? "is-selected" : "");
+          button.type = "button";
+          button.disabled = startOfDay(cell).getTime() < startOfDay(now).getTime();
+          button.addEventListener("click", () => {
+            selectedTargetKey = key;
+            renderPicker();
+          });
+          grid.append(button);
+        });
+      }
+
+      function renderTaskDialog() {
+        if (!activeTaskDate) return;
+        const list = document.getElementById("taskList");
+        const items = state.tasks[activeTaskDate] || [];
+        document.getElementById("taskTitle").textContent = formatDayLabel(activeTaskDate);
+        document.getElementById("taskEmpty").hidden = items.length > 0;
+        list.innerHTML = "";
+        items.forEach((task) => {
+          const label = node("label", "", `task-row${task.done ? " is-done" : ""}`);
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.checked = task.done;
+          input.addEventListener("change", () => toggleTask(activeTaskDate, task.id));
+          label.append(input, node("span", task.text));
+          list.append(label);
+        });
+      }
+
+      function node(tag, text, className = "") {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        element.textContent = text;
+        return element;
+      }
+
+      function openDateDialog() {
+        pickerMonth = new Date(state.targetValue);
+        selectedTargetKey = dateKey(new Date(state.targetValue));
+        document.getElementById("dateBackdrop").classList.add("is-open");
+        renderPicker();
+      }
+
+      function closeDateDialog() {
+        document.getElementById("dateBackdrop").classList.remove("is-open");
+      }
+
+      function openTaskDialog(key) {
+        activeTaskDate = key;
+        document.getElementById("taskInput").value = "";
+        document.getElementById("taskBackdrop").classList.add("is-open");
+        renderTaskDialog();
+        window.setTimeout(() => document.getElementById("taskInput").focus(), 0);
+      }
+
+      function closeTaskDialog() {
+        activeTaskDate = null;
+        document.getElementById("taskBackdrop").classList.remove("is-open");
+      }
+
+      function toggleTask(key, taskId) {
+        state.tasks[key] = (state.tasks[key] || []).map((task) =>
+          task.id === taskId ? { ...task, done: !task.done } : task,
+        );
+        saveState();
+        render();
+      }
+
+      document.getElementById("titleButton").addEventListener("click", () => {
+        const input = document.getElementById("titleInput");
+        input.value = state.title;
+        document.getElementById("titleButton").hidden = true;
+        input.hidden = false;
+        input.focus();
+        input.select();
+      });
+
+      document.getElementById("titleInput").addEventListener("blur", saveTitle);
+      document.getElementById("titleInput").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") saveTitle();
+        if (event.key === "Escape") {
+          document.getElementById("titleInput").hidden = true;
+          document.getElementById("titleButton").hidden = false;
+        }
+      });
+
+      function saveTitle() {
+        const input = document.getElementById("titleInput");
+        state.title = input.value.trim() || "项目上线";
+        input.hidden = true;
+        document.getElementById("titleButton").hidden = false;
+        saveState();
+        render();
+      }
+
+      document.getElementById("countdownButton").addEventListener("click", openDateDialog);
+      document.getElementById("closeDate").addEventListener("click", closeDateDialog);
+      document.getElementById("cancelDate").addEventListener("click", closeDateDialog);
+      document.getElementById("prevMonth").addEventListener("click", () => {
+        pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() - 1, 1);
+        renderPicker();
+      });
+      document.getElementById("nextMonth").addEventListener("click", () => {
+        pickerMonth = new Date(pickerMonth.getFullYear(), pickerMonth.getMonth() + 1, 1);
+        renderPicker();
+      });
+      document.getElementById("applyDate").addEventListener("click", () => {
+        const selected = parseDateKey(selectedTargetKey);
+        selected.setHours(9, 0, 0, 0);
+        state.targetValue = `${dateKey(selected)}T09:00`;
+        saveState();
+        closeDateDialog();
+        render();
+      });
+
+      document.getElementById("closeTask").addEventListener("click", closeTaskDialog);
+      document.getElementById("taskForm").addEventListener("submit", (event) => {
+        event.preventDefault();
+        const input = document.getElementById("taskInput");
+        const text = input.value.trim();
+        if (!activeTaskDate || !text) return;
+        state.tasks[activeTaskDate] = [
+          ...(state.tasks[activeTaskDate] || []),
+          { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, text, done: false },
+        ];
+        input.value = "";
+        saveState();
+        render();
+      });
+
+      window.setInterval(render, 1000);
+      render();
+    </script>
+  </body>
+</html>
