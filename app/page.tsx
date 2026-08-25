@@ -13,6 +13,7 @@ type TasksByDate = Record<string, Task[]>;
 const STORAGE_KEY = 't-day-state-v1';
 const DEFAULT_TITLE = '项目上线';
 const DEFAULT_TARGET = '2026-09-01T09:00';
+const INITIAL_NOW = new Date(2026, 7, 25, 12, 0, 0);
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const WEEKDAYS = ['一', '二', '三', '四', '五', '六', '日'];
 
@@ -139,7 +140,7 @@ function buildPickerCells(monthDate: Date) {
 }
 
 export default function Home() {
-  const [now, setNow] = useState(() => new Date());
+  const [now, setNow] = useState(INITIAL_NOW);
   const [title, setTitle] = useState(DEFAULT_TITLE);
   const [targetValue, setTargetValue] = useState(DEFAULT_TARGET);
   const [tasks, setTasks] = useState<TasksByDate>({});
@@ -152,6 +153,7 @@ export default function Home() {
   const [selectedTargetKey, setSelectedTargetKey] = useState(() => dateKey(new Date(DEFAULT_TARGET)));
 
   useEffect(() => {
+    setNow(new Date());
     const timer = window.setInterval(() => setNow(new Date()), 1000);
     return () => window.clearInterval(timer);
   }, []);
