@@ -9,6 +9,7 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "vinext start",
+    "prepare:github-pages": "node scripts/prepare-github-pages.mjs",
     "check:github-pages": "node scripts/check-github-pages.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next"
   },

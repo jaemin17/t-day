@@ -38,14 +38,14 @@ jobs:
         run: npm run build
         env:
           DEPLOY_TARGET: github-pages
+      - name: Prepare GitHub Pages artifact
+        run: npm run prepare:github-pages
       - name: Check GitHub Pages artifact
         run: npm run check:github-pages
-      - name: Enable underscored asset paths
-        run: touch dist/client/.nojekyll
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/client
+          path: dist/github-pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
